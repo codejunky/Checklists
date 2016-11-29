@@ -34,6 +34,8 @@ class ChecklistViewController: UITableViewController,
     items.append(row4Item)
     
     super.init(coder: aDecoder)
+    print("Document folder is \(documentDirectory())")
+    print("Data file path is \(dataFilePath())")
   }
   
   override func viewDidLoad() {
@@ -74,6 +76,7 @@ class ChecklistViewController: UITableViewController,
     }
     
     tableView.deselectRow(at: indexPath, animated: true)
+    saveChecklistItems()
   }
   
   override func tableView(_ tableView: UITableView,
@@ -84,6 +87,7 @@ class ChecklistViewController: UITableViewController,
     
     let indexPaths = [indexPath]
     tableView.deleteRows(at: indexPaths, with: .automatic)
+    saveChecklistItems()
   }
   
   func itemDetailViewControllerDidCancel(_ controller: ItemDetailViewController) {
@@ -102,6 +106,7 @@ class ChecklistViewController: UITableViewController,
     tableView.insertRows(at: indexPaths, with: .automatic)
     
     dismiss(animated: true, completion: nil)
+    saveChecklistItems()
   }
   
   func itemDetailViewController(_ controller: ItemDetailViewController,
@@ -114,6 +119,7 @@ class ChecklistViewController: UITableViewController,
     }
     
     dismiss(animated: true, completion: nil)
+    saveChecklistItems()
   }
   
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -154,6 +160,25 @@ class ChecklistViewController: UITableViewController,
                      with item: ChecklistItem) {
     let label = cell.viewWithTag(1000) as! UILabel
     label.text = item.text
+  }
+  
+  func documentDirectory() -> URL {
+    let paths = FileManager.default.urls(for: .documentDirectory,
+                                         in: .userDomainMask)
+    
+    return paths[0]
+  }
+  
+  func dataFilePath() -> URL {
+    return documentDirectory().appendingPathComponent("Checklists.plist")
+  }
+  
+  func saveChecklistItems() {
+    let data = NSMutableData()
+    let archiver = NSKeyedArchiver(forWritingWith: data)
+    archiver.encode(items, forKey: "ChecklistItems")
+    archiver.finishEncoding()
+    data.write(to: dataFilePath(), atomically: true)
   }
 }
 
