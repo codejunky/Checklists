@@ -5,6 +5,8 @@ class ChecklistItem: NSObject, NSCoding {
   var checked = false
   
   required init?(coder aDecoder: NSCoder) {
+    text = aDecoder.decodeObject(forKey: "Text") as! String
+    checked = aDecoder.decodeBool(forKey: "Checked")
     super.init()
   }
   
