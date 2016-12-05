@@ -6,30 +6,15 @@ class AllListsViewController: UITableViewController, ListDetailViewControllerDel
   
   required init?(coder aDecoder: NSCoder) {
     lists = [Checklist]()
-    
     super.init(coder: aDecoder)
-    
-    var list = Checklist(name: "Birthdays")
-    lists.append(list)
-    
-    list = Checklist(name: "Croceries")
-    lists.append(list)
-    
-    list = Checklist(name: "Cool Apps")
-    lists.append(list)
-    
-    list = Checklist(name: "To Do")
-    lists.append(list)
+    loadChecklists()
   }
+  
+  // MARK: - iOS lifecycle methods
   
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    // Uncomment the following line to preserve selection between presentations
-    // self.clearsSelectionOnViewWillAppear = false
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem()
   }
   
   override func didReceiveMemoryWarning() {
@@ -104,6 +89,8 @@ class AllListsViewController: UITableViewController, ListDetailViewControllerDel
     }
   }
   
+  // MARK: - ListDetailViewControllerDelegate protocol implementation
+  
   func listDetailViewControllerDidCancel(_ controller: ListDetailViewController) {
     dismiss(animated: true, completion: nil)
   }
@@ -131,7 +118,8 @@ class AllListsViewController: UITableViewController, ListDetailViewControllerDel
     dismiss(animated: true, completion: nil)
   }
   
-  // MARK: - Helper functions
+  // MARK: - Helper methods
+  
   func makeCell(for tableView: UITableView) -> UITableViewCell {
     let cellIndentifier = "Cell"
     if let cell =
@@ -140,6 +128,35 @@ class AllListsViewController: UITableViewController, ListDetailViewControllerDel
     } else {
       return UITableViewCell(style: .default,
                              reuseIdentifier: cellIndentifier)
+    }
+  }
+  
+  func documentsDirectory() -> URL {
+    let paths = FileManager.default.urls(for: .documentDirectory,
+                                         in: .userDomainMask)
+    return paths[0]
+  }
+  
+  func dataFilePath() -> URL {
+    return documentsDirectory().appendingPathComponent("Checklists.plist")
+  }
+  
+  func saveChecklists() {
+    let data = NSMutableData()
+    let archiver = NSKeyedArchiver(forWritingWith: data)
+    
+    archiver.encode(lists, forKey: "Checklists")
+    archiver.finishEncoding()
+    data.write(to: dataFilePath(), atomically: true)
+  }
+  
+  func loadChecklists() {
+    let path = dataFilePath()
+    if let data = try? Data(contentsOf: path) {
+      let unarchiver = NSKeyedUnarchiver(forReadingWith: data)
+      
+      lists = unarchiver.decodeObject(forKey: "Checklists") as! [Checklist]
+      unarchiver.finishDecoding()
     }
   }
   
