@@ -1,6 +1,7 @@
 import UIKit
 
-class AllListsViewController: UITableViewController, ListDetailViewControllerDelegate {
+class AllListsViewController: UITableViewController,
+      ListDetailViewControllerDelegate, UINavigationControllerDelegate {
   
   var dataModel: DataModel!
   
@@ -11,9 +12,16 @@ class AllListsViewController: UITableViewController, ListDetailViewControllerDel
     
   }
   
-  override func didReceiveMemoryWarning() {
-    super.didReceiveMemoryWarning()
-    // Dispose of any resources that can be recreated.
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    
+    navigationController?.delegate = self
+    
+    let index = UserDefaults.standard.integer(forKey: "ChecklistIndex")
+    if index != -1 {
+      let checklist = dataModel.lists[index]
+      performSegue(withIdentifier: "ShowChecklist", sender: checklist)
+    }
   }
   
   // MARK: - Table view data source
@@ -37,6 +45,8 @@ class AllListsViewController: UITableViewController, ListDetailViewControllerDel
   
   override func tableView(_ tableView: UITableView,
                  didSelectRowAt indexPath: IndexPath) {
+    UserDefaults.standard.set(indexPath.row, forKey: "ChecklistIndex")
+    
     let checklist = dataModel.lists[indexPath.row]
     performSegue(withIdentifier: "ShowChecklist", sender: checklist)
   }
@@ -110,6 +120,16 @@ class AllListsViewController: UITableViewController, ListDetailViewControllerDel
       }
     }
     dismiss(animated: true, completion: nil)
+  }
+  
+  // MARK: - UINavigationControllerDelegate protocol implementation
+  func navigationController(_ navigationController: UINavigationController,
+                            willShow viewController: UIViewController,
+                            animated: Bool) {
+    
+    if viewController === self {
+      UserDefaults.standard.set(-1, forKey: "ChecklistIndex")
+    }
   }
   
   // MARK: - Helper methods
